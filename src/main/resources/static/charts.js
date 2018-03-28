@@ -124,6 +124,74 @@ function donutChart(objectName, data) {
     }
 }
 
+// String hash from http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+
+function stringHash (s) {
+  var hash = 0, i, chr, len;
+  if (s.length === 0) return hash;
+  for (i = 0, len = s.length; i < len; i++) {
+    chr   = s.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+//Return a color unique for this key, brigher if selected.
+//Of course the color can't really be unique because there are more keys
+//in the world than colors; but the algorithm tries to make similar strings
+//come out different colors so they can be distinguished in a chart or graph"""
+function hashColor(key, selected) {
+
+    function tw(t) { return t ^ (t << (t % 5)) ^ (t << (6 + (t % 7))) ^ (t << (13 + (t % 11))); }
+    function hex2(t) { return ("00"+t.toString(16)).substr(-2); }
+    var theHash = tw(stringHash(key) % 5003)
+    var ifsel = selected?0x80:0x00;
+    r = ifsel | (theHash & 0x7f);
+    g = ifsel | ((theHash >> 8) & 0x7F);
+    b = ifsel | ((theHash >> 16) & 0x7F);
+    return "#" + hex2(r) + hex2(g) + hex2(b);
+}
+
+function multiLineChart(objectName, data) {
+    new Chart(document.getElementById(objectName).getContext("2d"), {
+        type: "line",
+        data: {
+            // The year-quarter labels from any of the datasets (they're all the same)
+            labels: Object.keys(data[objectName][Object.keys(data[objectName])[0]]),
+            datasets: Object.keys(data[objectName]).map(function(key, index) {
+              return {
+                label: key,
+                pointRadius: 0,
+                data: Object.values(data[objectName][key]),
+                borderColor: hashColor(key),
+                backgroundColor: hashColor(key,true),
+                lineTension: 0
+              } } )
+        },
+        options: {
+            maintainAspectRatio: false,
+            animation: false,
+            scales: {
+                xAxes: [{
+                    display: false,
+                    stacked: true
+                }],
+                yAxes: [{
+                    position: "right",
+                    stacked: true
+                }]
+            },
+            legend: {
+                display: true
+            },
+            tooltips: {
+                intersect: false
+            }
+        }
+    });
+}
+
 function lineChart(objectName, data) {
     new Chart(document.getElementById(objectName).getContext("2d"), {
         type: "line",
@@ -157,4 +225,3 @@ function lineChart(objectName, data) {
         }
     });
 }
-

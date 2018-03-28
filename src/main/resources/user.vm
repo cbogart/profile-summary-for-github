@@ -14,8 +14,9 @@
             <div v-if="user.company"><i class="fa fa-fw fa-building"></i>{{ user.company }}</div>
             <div><i class="fa fa-fw fa-external-link"></i><a :href="user.htmlUrl" target="_blank">View profile on GitHub</a></div>
         </div>
+        
         <div class="chart-container commits-per-quarter">
-            <canvas id="quarterCommitCount"></canvas>
+            <canvas id="quarterLangCommitCount"></canvas>
         </div>
     </div>
     <div class="charts">
@@ -88,7 +89,8 @@
                     }
                 },
                 mounted: function () {
-                    lineChart("quarterCommitCount", response.data);
+                    //lineChart("quarterCommitCount", response.data);
+                    multiLineChart("quarterLangCommitCount", response.data);
                     donutChart("langRepoCount", response.data);
                     donutChart("langStarCount", response.data);
                     donutChart("langCommitCount", response.data);
@@ -117,4 +119,3 @@
     })()
 </script>
 #end
-

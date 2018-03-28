@@ -14,10 +14,12 @@ object UserCtrl {
         if (Cache.invalid(username)) {
             val user = GhService.users.getUser(username)
             val repos = GhService.repos.getRepositories(username).filter { !it.isFork && it.size != 0 }
-            val repoCommits = repos.parallelStream().map { it to commitsForRepo(it).filter { it.author?.login.equals(username, ignoreCase = true) } }.toList().toMap()
+            val repoCommits = repos.parallelStream().map { it to commitsForRepo(it).filter 
+              { it.committer?.login.equals(username, ignoreCase = true) } }.toList().toMap()
             val langRepoGrouping = repos.groupingBy { (it.language ?: "Unknown") }
 
             val quarterCommitCount = CommitCountUtil.getCommitsForQuarters(user, repoCommits)
+            val quarterLangCommitCount = CommitCountUtil.getLangCommitsForQuarters(user, repoCommits)
             val langRepoCount = langRepoGrouping.eachCount().toList().sortedBy { (_, v) -> -v }.toMap()
             val langStarCount = langRepoGrouping.fold(0) { acc, repo -> acc + repo.watchers }.toList().sortedBy { (_, v) -> -v }.toMap()
             val langCommitCount = langRepoGrouping.fold(0) { acc, repo -> acc + repoCommits[repo]!!.size }.toList().sortedBy { (_, v) -> -v }.toMap()
@@ -30,6 +32,7 @@ object UserCtrl {
             Cache.putUserProfile(UserProfile(
                     user,
                     quarterCommitCount,
+                    quarterLangCommitCount,
                     langRepoCount,
                     langStarCount,
                     langCommitCount,
@@ -67,6 +70,7 @@ object UserCtrl {
 data class UserProfile(
         val user: User,
         val quarterCommitCount: Map<String, Int>,
+        val quarterLangCommitCount: Map<String, Map<String, Int>>,
         val langRepoCount: Map<String, Int>,
         val langStarCount: Map<String, Int>,
         val langCommitCount: Map<String, Int>,
